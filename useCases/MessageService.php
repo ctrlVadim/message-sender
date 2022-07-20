@@ -2,8 +2,8 @@
 
 namespace app\useCases;
 
+use app\entities\Message;
 use app\forms\MessageForm;
-use app\models\Message;
 use app\services\Messenger\MessengerInterface;
 use yii\httpclient\Response;
 
@@ -25,8 +25,8 @@ class MessageService
         return $message;
     }
 
-    public function sendMessage(int $chat_id, string $message): Response
+    public function sendMessage(int $chat_id, string $text): Response
     {
-        return $this->messenger->sendMessage($chat_id, $message);
+        return $this->messenger->sendMessage($chat_id, $text);
     }
 }
