@@ -4,13 +4,19 @@ namespace app\useCases;
 
 use app\forms\MessageForm;
 use app\models\Message;
-use Longman\TelegramBot\Entities\ServerResponse;
-use Longman\TelegramBot\Request;
-use Longman\TelegramBot\Telegram;
+use app\services\Messenger\MessengerInterface;
+use yii\httpclient\Response;
 
 class MessageService
 {
-    public function store(MessageForm $form) : Message
+    public MessengerInterface $messenger;
+
+    public function __construct(MessengerInterface $messenger)
+    {
+        $this->messenger = $messenger;
+    }
+
+    public function store(MessageForm $form): Message
     {
         $message = new Message();
         $message->message = $form->message;
@@ -19,10 +25,8 @@ class MessageService
         return $message;
     }
 
-    public function sendMessage($data) : ServerResponse
+    public function sendMessage(int $chat_id, string $message): Response
     {
-        $telegram = new Telegram('5468953526:AAGGvDaOloYQKcwkT3iQiZTwIZln05a3SPs', 'inspectrum_clinic_bot');
-
-        return Request::sendMessage($data);
+        return $this->messenger->sendMessage($chat_id, $message);
     }
 }

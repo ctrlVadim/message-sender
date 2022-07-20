@@ -9,6 +9,7 @@ use app\useCases\MessageService;
 use Yii;
 use yii\filters\VerbFilter;
 use yii\web\Controller;
+use yii\web\ServerErrorHttpException;
 
 class MessageController extends Controller
 {
@@ -25,7 +26,7 @@ class MessageController extends Controller
     {
         return [
             'verbs' => [
-                'class'=> VerbFilter::class,
+                'class' => VerbFilter::class,
                 'actions' => [
                     'index' => ['GET'],
                     'message' => ['POST']
@@ -47,23 +48,21 @@ class MessageController extends Controller
         $form = new MessageForm();
         $form->load($data);
 
-        if ($form->validate())
-        {
-            $message = $this->service->store($form);
-            $response = $this->service->sendMessage([
-                'chat_id' => 1897849402,
-                'text' => $message->message
-            ]);
+        if ($form->validate()) {
+            try {
+                $message = $this->service->store($form);
+                $response = $this->service->sendMessage(1897849402, $message->message);
 
-            if ($response->isOk())
-            {
-                Yii::$app->session->setFlash('success', 'Message successfully sent');
-            } else
-            {
-                Yii::$app->session->setFlash('danger', $response->getRawData()['description']);
+                if ($response->isOk) {
+                    Yii::$app->session->setFlash('success', 'Message successfully sent');
+                } else {
+                    Yii::$app->session->setFlash('danger', 'Error');
+                }
+            } catch (ServerErrorHttpException $e) {
+                Yii::$app->session->setFlash('danger', $e->getMessage());
             }
-        } else
-        {
+
+        } else {
             Yii::$app->session->setFlash('danger', 'Given data is not valid');
         }
 
